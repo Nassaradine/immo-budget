@@ -77,8 +77,6 @@ les tests pytest et l'interface web (formulaires, carte, estimation).
 ## Captures d'écran
 Erreurs rencontrées puis corrigées :
 
-![Erreur Python]
-
 ```text
 Traceback (most recent call last):
   File ".../immo-budget/main.py", line 6, in <module>
