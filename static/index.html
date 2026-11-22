@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Où acheter avec mon budget ? · Île-de-France 2024</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1c2128;--mute:#6b7280;--line:#e5e7eb;--accent:#10b981;--head:#22272e}
+@media (prefers-color-scheme:dark){:root{--bg:#14171c;--card:#1d2127;--ink:#e8eaed;--mute:#9aa3ad;--line:#2d333b}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--head);color:#fff;padding:28px 20px}
+header h1{margin:0 auto;max-width:1100px;font-size:clamp(1.5rem,4vw,2.4rem);font-weight:800}
+header p{margin:6px auto 0;max-width:1100px;color:#b6bdc6}
+main{max-width:1100px;margin:0 auto;padding:20px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 16px;border-radius:999px;font:600 .95rem Inter,sans-serif;cursor:pointer}
+nav button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.grid{display:grid;grid-template-columns:320px 1fr;gap:16px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+label{display:block;font-weight:600;font-size:.85rem;margin:12px 0 4px}
+input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+.go{margin-top:16px;width:100%;padding:12px;border:0;border-radius:8px;background:var(--accent);color:#fff;font:700 1rem Inter,sans-serif;cursor:pointer}
+#map{height:520px;border-radius:14px;border:1px solid var(--line)}
+.row{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.bar{height:6px;border-radius:3px;background:var(--accent);margin-top:4px}
+.mute{color:var(--mute);font-size:.85rem}
+.big{font-size:2rem;font-weight:800}
+.err{color:#ef4444;margin-top:10px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0;font-size:.85rem}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.list{max-height:280px;overflow:auto;margin-top:12px}
+.tab{display:none}.tab.on{display:block}
+</style>
+</head>
+<body>
+<header><h1>🏠 Où acheter avec mon budget ?</h1><p>Ventes de logements 2024 en Île-de-France · données DVF (data.gouv.fr)</p></header>
+<main>
+<nav>
+  <button data-tab="top" class="on">1 · Top 10 des plus chères</button>
+  <button data-tab="service">2 · Où acheter ?</button>
+  <button data-tab="estim">3 · Estimer · 2023 vs 2024</button>
+</nav>
+
+<section id="top" class="tab on card"><h2>Les 10 communes les plus chères (prix médian au m², 2024)</h2><div id="toplist">Chargement…</div></section>
+
+<section id="service" class="tab">
+ <div class="grid">
+  <form class="card" id="f">
+   <label for="budget">Budget (€)</label><input id="budget" type="number" min="10000" step="5000" value="350000" required>
+   <label for="surface">Surface souhaitée (m²)</label><input id="surface" type="number" min="9" max="400" value="50" required>
+   <label for="type">Type de bien</label><select id="type"><option>Appartement</option><option>Maison</option></select>
+   <button class="go" type="submit">Voir sur la carte</button>
+   <div class="err" id="err"></div>
+   <div class="mute" id="sum" style="margin-top:12px"></div>
+   <div class="list" id="res"></div>
+  </form>
+  <div>
+   <div id="map"></div>
+   <div class="legend"><span><i style="background:#10b981"></i>Accessible (bien typique dans le budget)</span><span><i style="background:#f59e0b"></i>Possible (biens moins chers que la médiane)</span><span><i style="background:#ef4444"></i>Hors budget</span><span><i style="background:#9aa3ad"></i>Pas assez de ventes</span></div>  </div>
+ </div>
+</section>
+
+<section id="estim" class="tab card">
+ <h2>Estimer un bien et comparer 2023 / 2024</h2>
+ <div class="grid" style="grid-template-columns:320px 1fr">
+  <form id="ef">
+   <label for="com">Commune ou arrondissement</label><input id="com" list="comlist" placeholder="Ex. Paris 6e Arrondissement" required><datalist id="comlist"></datalist>
+   <label for="etype">Type de bien</label><select id="etype"><option>Appartement</option><option>Maison</option></select>
+   <label for="esurf">Surface (m²)</label><input id="esurf" type="number" min="9" max="400" value="60" required>
+   <button class="go" type="submit">Estimer</button><div class="err" id="eerr"></div>
+  </form>
+  <div id="eres" class="mute">Le résultat s'affichera ici.</div>
+ </div>
+</section>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const $=s=>document.querySelector(s), fmt=n=>Math.round(n).toLocaleString('fr-FR');
+async function api(path,params={}){
+  const r=await fetch(path+'?'+new URLSearchParams(params)); const j=await r.json();
+  if(!r.ok) throw new Error(j.error||'Erreur serveur'); return j;
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button,.tab').forEach(e=>e.classList.remove('on'));
+  b.classList.add('on'); $('#'+b.dataset.tab).classList.add('on');
+  if(b.dataset.tab==='service') initMap();
+});
+
+// 1 · Top 10
+api('/api/top').then(list=>{
+  const max=list[0].prix_m2;
+  $('#toplist').innerHTML=list.map((c,i)=>`<div class="row"><b>${i+1}</b><div>${c.nom}<div class="bar" style="width:${c.prix_m2/max*100}%"></div></div><div><b>${fmt(c.prix_m2)} €/m²</b><div class="mute">${c.ventes} ventes</div></div></div>`).join('');
+}).catch(e=>$('#toplist').textContent=e.message);
+
+// 2 · Carte
+let map, layer, geo, stats={};
+async function initMap(){
+  if(map){map.invalidateSize();return}
+  map=L.map('map').setView([48.8566,2.35],9);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+  geo=await (await fetch('/geojson')).json(); draw();
+}
+let budget=0;
+const COLORS={ok:'#10b981',maybe:'#f59e0b',no:'#ef4444',none:'#9aa3ad'};
+function level(s){
+  if(!s) return 'none';
+  if(s.prix_estime<=budget) return 'ok';
+  if(s.part>=0.2) return 'maybe';
+  return 'no';
+}
+function style(f){
+  const l=level(stats[f.properties.code]);
+  return {color:'#fff',weight:.6,fillColor:COLORS[l],fillOpacity:l==='none'?.25:.65};
+}
+function draw(){
+  if(layer) layer.remove();
+  layer=L.geoJSON(geo,{style,onEachFeature:(f,l)=>{
+    const s=stats[f.properties.code];
+    l.bindTooltip(s?`<b>${f.properties.nom}</b><br>${fmt(s.prix_m2)} €/m² (médiane)<br>≈ ${fmt(s.prix_estime)} € pour votre surface<br>${Math.round(s.part*100)} % des ${s.ventes} ventes accessibles`:`<b>${f.properties.nom}</b><br>Pas assez de ventes`,{sticky:true});
+  }}).addTo(map);
+}
+$('#f').onsubmit=async e=>{
+  e.preventDefault(); $('#err').textContent='';
+  try{
+    const r=await api('/api/search',{budget:$('#budget').value,surface:$('#surface').value,type:$('#type').value});
+    stats=Object.fromEntries(r.communes.map(c=>[c.code,c]));
+    budget=+$('#budget').value;
+    await initMap(); draw();
+    const ok=r.communes.filter(c=>level(c)==='ok'), maybe=r.communes.filter(c=>level(c)==='maybe');
+    $('#sum').textContent=`Prix maximal : ${fmt(r.max_m2)} €/m² · ${ok.length} communes accessibles, ${maybe.length} possibles`;
+    $('#res').innerHTML=[...ok,...maybe].slice(0,40).map(c=>`<div class="row" style="grid-template-columns:1fr auto"><span>${c.nom}</span><span class="mute">≈ ${fmt(c.prix_estime)} €</span></div>`).join('');
+  }catch(x){$('#err').textContent=x.message}
+};
+
+// 3 · Estimation
+let names={};
+api('/api/communes').then(l=>{l.forEach(c=>names[c.nom]=c.code);$('#comlist').innerHTML=l.map(c=>`<option value="${c.nom}">`).join('')});
+$('#ef').onsubmit=async e=>{
+  e.preventDefault(); $('#eerr').textContent='';
+  const code=names[$('#com').value];
+  if(!code){$('#eerr').textContent='Choisissez une commune dans la liste.';return}
+  try{
+    const r=await api('/api/estimate',{code,type:$('#etype').value,surface:$('#esurf').value});
+    const ev=r.evolution_pct;
+    $('#eres').innerHTML=`<div class="mute">${r.nom} · ${r.ventes} ventes en 2024</div><div class="big">${fmt(r.prix)} €</div>
+      <div class="mute">Fourchette : ${fmt(r.bas)} – ${fmt(r.haut)} €</div>
+      <p><b>${fmt(r.prix_m2)} €/m²</b> en 2024${r.prix_m2_2023?` contre <b>${fmt(r.prix_m2_2023)} €/m²</b> en 2023 : <b style="color:${ev>=0?'#10b981':'#ef4444'}">${ev>0?'+':''}${ev} %</b>`:' (2023 : pas assez de ventes)'}.</p>`;
+  }catch(x){$('#eerr').textContent=x.message}
+};
+</script>
+</body>
+</html>
