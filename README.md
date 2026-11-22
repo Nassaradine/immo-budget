@@ -77,7 +77,16 @@ les tests pytest et l'interface web (formulaires, carte, estimation).
 ## Captures d'écran
 Erreurs rencontrées puis corrigées :
 
-![Erreur Python](docs/capture1.PNG)
+![Erreur Python]
+
+```text
+Traceback (most recent call last):
+  File ".../immo-budget/main.py", line 6, in <module>
+    from src.app import create_app
+  File ".../immo-budget/src/analysis.py", line 5, in <module>
+    def _sel(sales: pd.DataFrame, year: int, type_local: str | None = None) -> pd.DataFrame:
+TypeError: unsupported operand type(s) for |: 'type' and 'NoneType'
+```
 ![Erreur fond de carte](docs/capture2.PNG)
 
 Résultat final :
