@@ -20,12 +20,13 @@ Aucune clé d'API n'est nécessaire. Réglages facultatifs (port, seuil de vente
 
 ## Lancement
 ```bash
-python main.py
+python main.py --refresh
 ```
 Au premier lancement, le script télécharge les fichiers DVF 2023-2024 des 8 départements d'Île-de-France
 et les contours des communes dans `data/` (dossier ignoré par git, quelques minutes), puis ouvre
 http://127.0.0.1:5000. Les lancements suivants sont immédiats.
 `python main.py --refresh` force un nouveau téléchargement.
+--refresh va re-télécharger les données (quelques minutes) et recalculer les prix avec la nouvelle règle. Comparez ensuite le Top 10 avec celui d'avant : les valeurs peuvent légèrement bouger.
 
 ## Architecture
 - `main.py` : point d'entrée (préparation des données, puis démarrage du serveur)
@@ -39,14 +40,15 @@ http://127.0.0.1:5000. Les lancements suivants sont immédiats.
 
 ## Tests
 ```bash
-pytest
+python -m pytest -v
 ```
 Les tests utilisent de petits jeux de données fabriqués : ils ne téléchargent rien et fonctionnent hors ligne.
 
 ## Choix et limites
-- **Ventes retenues** : seules les ventes (`nature_mutation = Vente`) d'**un seul logement** sont gardées.
-  Une vente multi-logements ne permet pas de répartir le prix. Les ventes dont un logement est réparti
-  sur plusieurs lignes sont donc aussi écartées.
+- **Ventes retenues** : seules les ventes (`nature_mutation = Vente`) dont la composition est examinée en entier sont gardées :
+  une vente doit contenir **un seul bien bâti**, appartement ou maison (les dépendances comme un garage sont tolérées).
+  Les ventes groupées (logement + commerce, plusieurs logements, surface manquante) sont écartées, car leur prix
+  ne peut pas être attribué à un seul logement.
 - **Valeurs aberrantes** : prix au m² filtrés entre 1 000 et 30 000 €, surfaces entre 9 et 400 m² (erreurs de saisie).
 - **Classement des communes sur la carte** (prix au m² médian × surface souhaitée, comparé au budget) :
   - 🟢 *Accessible* : le bien « typique » de la commune (médiane × surface) rentre dans le budget ;
