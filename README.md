@@ -77,11 +77,11 @@ les tests pytest et l'interface web (formulaires, carte, estimation).
 ## Captures d'écran
 Erreurs rencontrées puis corrigées :
 
-![Erreur Python](docs/capture1.png)
-![Erreur fond de carte](docs/capture2.png)
+![Erreur Python](docs/capture1.PNG)
+![Erreur fond de carte](docs/capture2.PNG)
 
 Résultat final :
 
-![Carte](docs/carte.png)
-![Top 10](docs/top10.png)
-![Estimation](docs/estimation.png)
+![Carte](docs/carte.PNG)
+![Top 10](docs/top10.PNG)
+![Estimation](docs/estimation.PNG)
