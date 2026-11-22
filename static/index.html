@@ -20,7 +20,6 @@ nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);
 nav button.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
 .grid{display:grid;grid-template-columns:320px 1fr;gap:16px}
-@media(max-width:800px){.grid{grid-template-columns:1fr}#map{height:380px}}
 label{display:block;font-weight:600;font-size:.85rem;margin:12px 0 4px}
 input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
 .go{margin-top:16px;width:100%;padding:12px;border:0;border-radius:8px;background:var(--accent);color:#fff;font:700 1rem Inter,sans-serif;cursor:pointer}
@@ -34,6 +33,8 @@ input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .list{max-height:280px;overflow:auto;margin-top:12px}
 .tab{display:none}.tab.on{display:block}
+/* Règle mobile placée en dernier pour l'emporter sur #map{height:520px} */
+@media(max-width:800px){.grid{grid-template-columns:1fr}#map{height:380px}}
 </style>
 </head>
 <body>

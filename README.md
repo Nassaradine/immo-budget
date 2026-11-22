@@ -45,10 +45,10 @@ python -m pytest -v
 Les tests utilisent de petits jeux de données fabriqués : ils ne téléchargent rien et fonctionnent hors ligne.
 
 ## Choix et limites
-- **Ventes retenues** : seules les ventes (`nature_mutation = Vente`) dont la composition est examinée en entier sont gardées :
-  une vente doit contenir **un seul bien bâti**, appartement ou maison (les dépendances comme un garage sont tolérées).
-  Les ventes groupées (logement + commerce, plusieurs logements, surface manquante) sont écartées, car leur prix
-  ne peut pas être attribué à un seul logement.
+- **Ventes retenues** : seules les ventes (`nature_mutation = Vente`) portant sur **un seul bien bâti**, appartement ou maison,
+  sont gardées. Les **dépendances** (garage, cave) vendues avec le logement restent **incluses dans le prix**.
+  En revanche, les ventes associant un **logement et un commerce** sont **exclues**, de même que celles de plusieurs
+  logements ou dont la surface est manquante : leur prix ne peut pas être attribué à un seul logement.
 - **Valeurs aberrantes** : prix au m² filtrés entre 1 000 et 30 000 €, surfaces entre 9 et 400 m² (erreurs de saisie).
 - **Classement des communes sur la carte** (prix au m² médian × surface souhaitée, comparé au budget) :
   - 🟢 *Accessible* : le bien « typique » de la commune (médiane × surface) rentre dans le budget ;
@@ -75,6 +75,7 @@ les tests pytest et l'interface web (formulaires, carte, estimation).
 3. **Carte entièrement verte** : une commune était colorée dès qu'une seule vente passait dans le budget,
    si bien que la légende n'était pas respectée. Correction : quatre classes (accessible, possible,
    hors budget, pas assez de ventes), décrites dans « Choix et limites ».
+4. **Nettoyage des ventes DVF** : les ventes groupées (logement + commerce, plusieurs logements) étaient mal traitées, le prix total étant attribué à un seul logement. Correction après un audit extérieur du code : la composition complète de chaque vente est examinée avant de la garder ou de l'écarter.
 
 ## Captures d'écran
 Erreurs rencontrées puis corrigées :
