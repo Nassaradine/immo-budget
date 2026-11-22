@@ -19,14 +19,21 @@ pip install -r requirements.txt
 Aucune clé d'API n'est nécessaire. Réglages facultatifs (port, seuil de ventes) : copier `.env.example` en `.env`.
 
 ## Lancement
+
+```bash
+python main.py
+```
+
+Au premier lancement, les données sont téléchargées et préparées automatiquement
+(quelques minutes). Les lancements suivants réutilisent les fichiers locaux.
+L’application ouvre http://127.0.0.1:5000.
+
+Pour actualiser les sources et recalculer les données, notamment après une
+modification des règles de nettoyage :
+
 ```bash
 python main.py --refresh
 ```
-Au premier lancement, le script télécharge les fichiers DVF 2023-2024 des 8 départements d'Île-de-France
-et les contours des communes dans `data/` (dossier ignoré par git, quelques minutes), puis ouvre
-http://127.0.0.1:5000. Les lancements suivants sont immédiats.
-`python main.py --refresh` force un nouveau téléchargement.
---refresh va re-télécharger les données (quelques minutes) et recalculer les prix avec la nouvelle règle. Comparez ensuite le Top 10 avec celui d'avant : les valeurs peuvent légèrement bouger.
 
 ## Architecture
 - `main.py` : point d'entrée (préparation des données, puis démarrage du serveur)
@@ -91,7 +98,6 @@ TypeError: unsupported operand type(s) for |: 'type' and 'NoneType'
 ![Erreur fond de carte](docs/capture2.PNG)
 
 Résultat final :
-
 ![Carte](docs/carte.PNG)
 ![Top 10](docs/top10.PNG)
 ![Estimation](docs/estimation.PNG)
